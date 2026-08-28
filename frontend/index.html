@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Vulnerable Frontend</title>
+</head>
+<body>
+  <h1>Vulnerable Demo</h1>
+
+  <form id="searchForm">
+    <input name="q" id="q"><button type="submit">Search</button>
+  </form>
+  <div id="results"></div>
+
+  <form id="loginForm">
+    <input name="username" id="username" placeholder="username">
+    <input name="password" id="password" placeholder="password">
+    <button type="submit">Login</button>
+  </form>
+  <div id="token"></div>
+
+  <form id="execForm">
+    <input name="cmd" id="cmd"><button type="submit">Exec</button>
+  </form>
+  <pre id="execOut"></pre>
+
+  <form id="uploadForm">
+    <input name="filename" id="filename" placeholder="filename">
+    <textarea id="content"></textarea>
+    <button type="submit">Upload</button>
+  </form>
+
+  <script src="app.js"></script>
+</body>
+</html>
