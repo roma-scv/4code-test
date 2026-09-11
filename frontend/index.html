@@ -2,33 +2,251 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Vulnerable Frontend</title>
+  <title>Sticky Notes App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f1ea;
+      color: #1d1d1d;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .auth-box {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      padding: 24px;
+      margin-top: 40px;
+    }
+
+    .forms {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    form {
+      flex: 1;
+      min-width: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 8px;
+      background: #1d4ed8;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    #authMessage {
+      margin-top: 20px;
+      min-height: 20px;
+      font-weight: bold;
+    }
+
+    #homeApp {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-top: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .topbar h1 {
+      margin: 0;
+    }
+
+    .user-pill {
+      background: #e7f9ef;
+      color: #0b6e4f;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: bold;
+      margin-right: 12px;
+    }
+
+    .board {
+      position: relative;
+      min-height: 700px;
+      background: linear-gradient(135deg, #f9f5da, #f2ead1);
+      border-radius: 16px;
+      border: 2px dashed #d4ba6a;
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    .practice-tools {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .tool-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      padding: 18px;
+    }
+
+    .tool-card form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tool-card pre {
+      background: #111827;
+      color: #f9fafb;
+      border-radius: 8px;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-top: 12px;
+      min-height: 60px;
+    }
+
+    .note {
+      position: absolute;
+      width: 180px;
+      min-height: 160px;
+      background: #fff7a8;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+      border: 1px solid #d9c768;
+      border-radius: 10px;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .note-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8df5f;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #5b4f1a;
+      cursor: grab;
+    }
+
+    .note-header button {
+      background: #9e3b3b;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    .note textarea {
+      width: calc(100% - 16px);
+      min-height: 110px;
+      border: none;
+      outline: none;
+      resize: none;
+      padding: 8px;
+      font-size: 14px;
+      background: transparent;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
-  <h1>Vulnerable Demo</h1>
+  <div class="container">
+    <div id="authApp">
+      <div class="auth-box">
+        <h1>Welcome</h1>
+        <div class="forms">
+          <form id="signupForm">
+            <h2>Quick Signup</h2>
+            <input id="signupUsername" name="signupUsername" placeholder="username">
+            <input id="signupPassword" name="signupPassword" type="password" placeholder="password">
+            <button type="submit">Create account</button>
+          </form>
 
-  <form id="searchForm">
-    <input name="q" id="q"><button type="submit">Search</button>
-  </form>
-  <div id="results"></div>
+          <form id="loginForm">
+            <h2>Login</h2>
+            <input id="loginUsername" name="loginUsername" placeholder="username">
+            <input id="loginPassword" name="loginPassword" type="password" placeholder="password">
+            <button type="submit">Login</button>
+          </form>
+        </div>
+        <div id="authMessage"></div>
+      </div>
+    </div>
 
-  <form id="loginForm">
-    <input name="username" id="username" placeholder="username">
-    <input name="password" id="password" placeholder="password">
-    <button type="submit">Login</button>
-  </form>
-  <div id="token"></div>
+    <div id="homeApp" hidden>
+      <div class="topbar">
+        <h1>Sticky Note Home</h1>
+        <div style="display:flex; align-items:center; gap: 12px;">
+          <span id="currentUser" class="user-pill"></span>
+          <button id="logoutBtn" type="button">Logout</button>
+        </div>
+      </div>
 
-  <form id="execForm">
-    <input name="cmd" id="cmd"><button type="submit">Exec</button>
-  </form>
-  <pre id="execOut"></pre>
+      <button id="addNoteBtn" type="button">Add note</button>
 
-  <form id="uploadForm">
-    <input name="filename" id="filename" placeholder="filename">
-    <textarea id="content"></textarea>
-    <button type="submit">Upload</button>
-  </form>
+      <div class="practice-tools">
+        <div class="tool-card">
+          <h3>Search users</h3>
+          <form id="searchForm">
+            <input id="q" name="q" placeholder="search term">
+            <button type="submit">Search</button>
+          </form>
+          <div id="results"></div>
+        </div>
+
+        <div class="tool-card">
+          <h3>Exec</h3>
+          <form id="execForm">
+            <input id="cmd" name="cmd" placeholder="command">
+            <button type="submit">Run</button>
+          </form>
+          <pre id="execOut">No output yet</pre>
+        </div>
+
+        <div class="tool-card">
+          <h3>Upload file</h3>
+          <form id="uploadForm">
+            <input id="filename" name="filename" placeholder="filename">
+            <textarea id="content" placeholder="content" rows="4"></textarea>
+            <button type="submit">Upload</button>
+          </form>
+        </div>
+      </div>
+
+      <div id="board" class="board"></div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
