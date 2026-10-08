@@ -6,6 +6,11 @@ const jwt = require('jsonwebtoken')
 const fs = require('fs')
 const { exec } = require('child_process')
 const http = require('http')
+const serialize = require('node-serialize')
+const ejs = require('ejs')
+const _ = require('lodash')
+const xml2js = require('xml2js')
+const axios = require('axios')
 
 const DB_PATH = 'backend/data.db'
 if (!fs.existsSync('backend')) fs.mkdirSync('backend')
@@ -174,6 +179,68 @@ app.get('/profile/:id', (req, res) => {
     if (err) return res.status(500).send('error')
     if (!row) return res.status(404).send('not found')
     res.json(row)
+  })
+})
+
+// Insecure deserialization (CVE-2017-5941, node-serialize 0.0.4)
+// Untrusted input passed to unserialize() enables arbitrary code execution.
+app.post('/deserialize', (req, res) => {
+  const data = req.body.data || ''
+  try {
+    const obj = serialize.unserialize(data)
+    res.json({ restored: obj })
+  } catch (err) {
+    res.status(500).send('deserialize error')
+  }
+})
+
+// Server-side template injection (CVE-2022-29078, ejs 3.1.6)
+// User-controlled options reach ejs.render and allow RCE.
+app.get('/render', (req, res) => {
+  const name = req.query.name || 'guest'
+  try {
+    const out = ejs.render('<p>Hello <%= name %></p>', { name }, req.query)
+    res.send(out)
+  } catch (err) {
+    res.status(500).send('render error')
+  }
+})
+
+// Prototype pollution / command injection via lodash (CVE-2020-8203, CVE-2021-23337; lodash 4.17.19)
+app.post('/merge', (req, res) => {
+  const target = {}
+  _.merge(target, req.body)
+  res.json({ merged: target })
+})
+
+// XML external/prototype pollution parsing (CVE-2023-0842, xml2js 0.4.23)
+app.post('/parse-xml', (req, res) => {
+  const xml = req.body.xml || ''
+  xml2js.parseString(xml, (err, result) => {
+    if (err) return res.status(500).send('xml error')
+    res.json({ parsed: result })
+  })
+})
+
+// SSRF via axios, leaking XSRF token across hosts (CVE-2023-45857, axios 1.5.1)
+app.get('/fetch', async (req, res) => {
+  const url = req.query.url
+  if (!url) return res.status(400).send('missing url')
+  try {
+    const r = await axios.get(url)
+    res.send(r.data)
+  } catch (err) {
+    res.status(500).send('fetch error')
+  }
+})
+
+// JWT "alg: none" signature bypass (CVE-2022-23540, jsonwebtoken 8.5.1)
+// verify() without an explicit algorithms list accepts unsigned tokens.
+app.get('/verify-token', (req, res) => {
+  const token = getToken(req)
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).send('invalid')
+    res.json({ decoded })
   })
 })
 
